@@ -46,7 +46,7 @@ body {
     left: 0;
     top: 0;
     height: 100vh;
-    width: 800px;
+    width: 825px;
     background: var(--card-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -80,7 +80,7 @@ body {
 }
 
 .help-panel:not(.hidden)~.workspace {
-    margin-left: 800px;
+    margin-left: 815px;
     position: relative;
     z-index: 10;
 }
@@ -661,7 +661,6 @@ button:active {
     background: rgba(255, 159, 10, 0.1);
 }
 
-/* History Panel */
 .history-panel {
     background: var(--card-bg);
     backdrop-filter: blur(20px);
@@ -805,9 +804,9 @@ button:active {
 }
 
 .top-left-controls.panel-open-state {
-    /* Slide to the right side of the help panel (approx 800px width - container width - padding) */
+    /* Slide to the right side of the help panel (approx 825px width - container width - padding) */
     /* Using a calculation to stick it near the edge for desktop */
-    transform: translateX(610px);
+    transform: translateX(635px);
 }
 
 /* Generic Ghost Button Style */
@@ -1252,6 +1251,50 @@ input:checked+.slider:before {
     }
 }
 
+/* Специальный стиль для кнопок в День Рождения */
+/* Специальный стиль для кнопок в День Рождения */
+body.birthday-active .calculator .btn-operation,
+body.birthday-active .calculator .btn-equals {
+    /* Меняем на более мягкий, "золотой" градиент */
+    background-image: linear-gradient(to top, #D4AF37, #FFD700);
+    color: #333;
+    /* Темно-серый текст вместо чисто черного */
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    /* Легкая тень */
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* И для кнопок AC / DEL */
+body.birthday-active .calculator .btn-func,
+body.birthday-active .calculator .btn-red {
+    background-color: #555;
+    /* Сделаем их чуть светлее, чтобы соответствовать празднику */
+    color: #fff;
+}
+
+/* Анимация праздничного "прыжка" */
+.party-pop {
+    animation: partyJump 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes partyJump {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    40% {
+        transform: scale(1.15);
+        filter: brightness(1.5);
+        box-shadow: 0 0 25px #FFD60A;
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
 /* --- Mac Mode Override for Greetings --- */
 body[data-btn-style="mac"] .user-greeting,
 body[data-btn-style="mac"] .center-greeting {
@@ -1332,6 +1375,23 @@ body[data-btn-style="mac"] .center-greeting {
     background: rgba(0, 0, 0, 0.3) !important;
     padding: 12px 0;
     border-radius: 12px;
+}
+
+.color-picker {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 40px;
+    height: 28px;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.color-picker::-webkit-color-swatch {
+    border-radius: 4px;
+    border: none;
 }
 
 .icon-btn-small {
@@ -1895,4 +1955,199 @@ body[data-btn-style="mac"] .settings-select:focus {
 .history-panel .history-list {
     flex: 1;
     overflow-y: auto;
+}
+
+/* --- Help Panel Tabs --- */
+.help-tabs {
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 0;
+}
+
+.help-tab-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: none;
+}
+
+.help-tab-btn:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.help-tab-btn.active {
+    background: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.help-tab-content {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.help-tab-content.active {
+    display: flex;
+}
+
+.help-content-scrollable {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 16px;
+    padding-right: 8px;
+}
+
+/* --- Withdrawal Fees Table --- */
+.fees-search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin-top: 16px;
+    outline: none;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.fees-search-input:focus {
+    border-color: var(--primary-accent);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 2px rgba(58, 125, 255, 0.2);
+}
+
+.fees-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.fees-table thead {
+    position: sticky;
+    top: 0;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1;
+}
+
+.fees-table th {
+    text-align: left;
+    padding: 10px 4px;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fees-table th:last-child {
+    border-right: none;
+}
+
+.fees-table th.text-center {
+    text-align: center;
+}
+
+.fees-table td {
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    vertical-align: middle;
+    transition: background 0.2s;
+}
+
+.fees-table td:last-child {
+    border-right: none;
+}
+
+.fee-cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.fees-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.fee-number {
+    font-family: "SF Mono", "Menlo", "Roboto Mono", monospace;
+    font-size: 0.85em;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex: 1;
+    text-align: center;
+}
+
+.lowest-fee .fee-number {
+    color: #2CD4A7;
+    font-weight: 600;
+}
+
+.lowest-fee {
+    position: relative;
+    background: rgba(44, 212, 167, 0.05);
+}
+
+.fees-table td[contenteditable="true"]:focus {
+    outline: 1px solid var(--primary-accent);
+    outline-offset: -1px;
+    background: rgba(58, 125, 255, 0.1) !important;
+}
+
+.add-to-calc-btn {
+    background: rgba(58, 125, 255, 0.15);
+    border: none;
+    color: var(--primary-accent);
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: none;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.add-to-calc-btn:hover {
+    background: var(--primary-accent);
+    color: white;
+}
+
+/* Hide Potato Mode specific */
+body[data-perf="potato"] .fees-table {
+    background: #252525 !important;
+}
+
+body[data-perf="potato"] .fees-table thead {
+    background: #252525 !important;
+    backdrop-filter: none !important;
 }
