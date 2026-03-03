@@ -16,6 +16,33 @@ function toggleHelpPanel() {
     playSound('ui'); // Sound Hook
 }
 
+function switchHelpTab(tabId) {
+    // Top Tabs UI
+    document.querySelectorAll('.help-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    // Content Panels UI
+    document.querySelectorAll('.help-tab-content').forEach(content => {
+        content.classList.toggle('hidden', content.id !== `help-tab-${tabId}`);
+        content.classList.toggle('active', content.id === `help-tab-${tabId}`);
+    });
+
+    // Default Button visibility logic
+    const resetPartnersBtn = document.getElementById('resetPartnersBtn');
+    const resetFeesBtn = document.getElementById('resetFeesBtn');
+
+    if (resetPartnersBtn) {
+        resetPartnersBtn.style.display = tabId === 'partners' ? 'block' : 'none';
+    }
+
+    if (resetFeesBtn) {
+        resetFeesBtn.style.display = tabId === 'fees' ? 'block' : 'none';
+    }
+
+    playSound('ui');
+}
+
 function renderHistory() {
     const historyList = document.getElementById('historyList');
     if (!historyList) return;
