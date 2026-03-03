@@ -30,14 +30,22 @@
 
     <!-- Left Sidebar - Help Panel -->
     <div class="help-panel hidden" id="helpPanel">
-        <div class="help-header">
+        <div class="help-header" style="justify-content: flex-start; gap: 20px;">
+            <div class="help-tabs">
+                <button class="help-tab-btn active" data-tab="partners"
+                    onclick="switchHelpTab('partners')">Partners</button>
+                <button class="help-tab-btn" data-tab="fees" onclick="switchHelpTab('fees')">Withdrawal Fees</button>
+            </div>
             <div style="display: flex; align-items: center; gap: 16px;">
-                <h3>HELP / RULES</h3>
-                <button class="btn-ghost-danger" onclick="resetTableToDefaults()">Default</button>
+                <button class="btn-ghost-danger" id="resetPartnersBtn" onclick="resetTableToDefaults()">Default</button>
+                <button class="btn-ghost-danger" id="resetFeesBtn" onclick="resetFeesToDefaults()"
+                    style="display: none;">Default</button>
             </div>
             <!-- Hide button removed, floating control handles it -->
         </div>
-        <div class="help-content">
+
+        <!-- Partners Tab -->
+        <div class="help-content help-tab-content active" id="help-tab-partners">
             <table class="partners-table">
                 <thead>
                     <tr>
@@ -161,7 +169,33 @@
                     </tr>
                 </tbody>
             </table>
-            <button class="add-row-btn" onclick="addTableRow()">+ Add Row</button>
+            </table>
+            <button class="add-row-btn" onclick="addTableRow()">+ Add Partner</button>
+        </div>
+
+        <!-- Fees Tab -->
+        <div class="help-content help-tab-content hidden" id="help-tab-fees">
+            <input type="text" id="feeSearch" class="fees-search-input"
+                placeholder="Search coin or network (e.g. USDT TRC20)..." autocomplete="off">
+            <div class="help-content-scrollable">
+                <table class="fees-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left" style="min-width: 140px;">Coin/Network</th>
+                            <th class="text-center">Binance</th>
+                            <th class="text-center">KuCoin</th>
+                            <th class="text-center">ByBit</th>
+                            <th class="text-center">MEXC</th>
+                            <th class="text-center">Huobi</th>
+                            <th class="text-center">×</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feesTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <button class="add-row-btn" onclick="addNewFeeRow()">+ Add Coin</button>
+            </div>
         </div>
     </div>
 
@@ -468,8 +502,32 @@
                 <label class="settings-label">Particle <span id="particleOpacityValue">70%</span></label>
                 <input type="range" class="settings-slider" id="particleOpacitySlider" min="0" max="100" value="70">
             </div>
+            <!-- Section 3: Custom Theme -->
+            <div class="settings-section">
+                <h3 class="section-title">Custom Theme</h3>
+                <div class="settings-row">
+                    <label class="settings-label">Primary Color</label>
+                    <input type="color" class="color-picker" id="primaryColorPicker" value="#3A7DFF">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Secondary Color</label>
+                    <input type="color" class="color-picker" id="secondaryColorPicker" value="#2CD4A7">
+                </div>
+                <div class="settings-row">
+                    <label class="settings-label">Particle Emoji</label>
+                    <input type="text" class="settings-input" id="particleEmojiInput" placeholder="Напр: 💸,🚀,💎"
+                        style="max-width: 150px;">
+                </div>
+                <div class="settings-row">
+                    <button class="ghost-btn" onclick="applyCustomTheme()">Apply Custom</button>
+                    <button class="btn-ghost-danger" onclick="resetToDefaultTheme()"
+                        style="font-size: 0.8rem;">Reset</button>
+                </div>
+            </div>
         </div>
+
     </div>
+
 
     <!-- Контейнер для частиц НАД калькулятором (30%) -->
     <div id="particleContainerFront"></div>
@@ -490,6 +548,7 @@
     <script src="js/storage.js"></script>
     <script src="js/calculator.js"></script>
     <script src="js/sound.js"></script>
+    <script src="js/fees.js"></script>
     <script src="js/effects.js"></script>
     <script src="js/btc.js"></script>
     <script src="js/ui.js"></script>
@@ -513,6 +572,7 @@
                 <li>🌸 <b>Визуал:</b> Теперь не только снег! Добавлены эффекты <b>Sakura, Hearts, Party</b>.</li>
                 <li>🖼 <b>Кастомизация:</b> Ставь любые обои по URL + настройка затемнения.</li>
                 <li>👤 <b>Identity:</b> Укажи имя и настрой рандомные приветствия/фразы в разных частях экрана.</li>
+                <li>💰 <b>Withdrawal Fees:</b> Добавлены подсказки по комиссии для вывода.</li>
                 <li>🏗 <b>Архитектура:</b> Код разбит на модули, повышена стабильность.</li>
                 <li>🐛 <b>Фиксы:</b> Починил прозрачность, слои, анимации.</li>
                 <li>⚠️ <b>ВАЖНО:</b> Для корректной работы всех функций необходимо:зайти в настройки и нажать "Reset
@@ -525,7 +585,7 @@
         <div
             style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
             <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                src="https://www.youtube.com/embed/r1bObZH6uX0" title="YouTube video player" frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen>
             </iframe>
@@ -539,6 +599,4 @@
     </div>
 </body>
 
-
 </html>
-
