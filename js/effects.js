@@ -78,12 +78,6 @@ function getAutoSeason() {
     return { type: 'none' };
 }
 
-// Update UI theme colors based on active effect
-function updateThemeColors(effect) {
-    const colors = EVENT_COLORS[effect] || EVENT_COLORS['none'];
-    document.documentElement.style.setProperty('--primary-accent', colors.primary);
-    document.documentElement.style.setProperty('--secondary-accent', colors.secondary);
-}
 
 // FIX: Sync Dimming only if forced (new selection) or first run without stored data
 function syncDimmingToPreset(effect, force = false) {
@@ -233,23 +227,30 @@ function applyVisualEffects(forceSync = false) {
     // 2. Determine Mode
     const birthdayCheck = checkTodayBirthday();
     let mode = window.isVisualEffectsEnabled;
-    let currentSeason = { type: 'none' };
-    let isBirthdayActive = false;
 
-    if (birthdayCheck.isBirthday) {
-        currentSeason = { type: 'party', name: birthdayCheck.person.name };
+    // СБРОС: Сначала всегда убираем класс дня рождения
+    document.body.classList.remove('birthday-active');
+
+    if (birthdayCheck.isBirthday && mode !== 'none') {
         mode = 'party';
-        isBirthdayActive = true;
+        document.body.classList.add('birthday-active'); // Активируем золотые кнопки
+
+        // --- ЭФФЕКТНАЯ АНИМАЦИЯ КНОПОК ---
+        // Запускаем только если это свежая загрузка или принудительный выбор
+        const buttons = document.querySelectorAll('.calculator button');
+        buttons.forEach((btn, index) => {
+            // Очищаем старые классы анимации, если они были
+            btn.classList.remove('party-pop');
+
+            // Запускаем анимацию с задержкой (эффект волны)
+            setTimeout(() => {
+                btn.classList.add('party-pop');
+            }, index * 30); // Каждая кнопка прыгает через 30мс после предыдущей
+        });
+
+        // Устанавливаем заголовок
         if (titleEl) {
             titleEl.innerHTML = `<span style="color:#FFD60A">${birthdayCheck.person.name}</span> <span style="color:var(--text-color)">Happy Birthday! 🥳</span>`;
-        }
-    } else {
-        updateUserGreeting();
-        if (mode === 'auto') {
-            currentSeason = getAutoSeason();
-            mode = currentSeason.type;
-        } else {
-            currentSeason = { type: mode };
         }
     }
 
@@ -328,6 +329,53 @@ function toggleParticles(checkbox) {
     }
 }
 
+function applyCustomTheme() {
+    const primary = document.getElementById('primaryColorPicker').value;
+    const secondary = document.getElementById('secondaryColorPicker').value;
+    const emojis = document.getElementById('particleEmojiInput').value;
+
+    // Сохраняем в localStorage
+    localStorage.setItem('customTheme', JSON.stringify({ primary, secondary, emojis }));
+
+    // Применяем
+    updateThemeColors('custom'); // Новый режим!
+    createParticles('custom');
+
+    // Важно: переключаем селектор в "Off", чтобы юзер понимал, что активна кастомная тема
+    const select = document.getElementById('seasonSelect');
+    if (select) select.value = 'none';
+    localStorage.setItem('calcSeasonEffect', 'none');
+}
+
+function resetToDefaultTheme() {
+    localStorage.removeItem('customTheme');
+    updateThemeColors('none'); // Сбрасываем цвета на дефолт
+    createParticles('none');
+
+    // Восстанавливаем значения в пикерах
+    document.getElementById('primaryColorPicker').value = '#3A7DFF';
+    document.getElementById('secondaryColorPicker').value = '#2CD4A7';
+    document.getElementById('particleEmojiInput').value = '';
+}
+
+
+function updateThemeColors(effect) {
+    let colors;
+    if (effect === 'custom') {
+        const custom = JSON.parse(localStorage.getItem('customTheme'));
+        // ЗАЩИТА: Проверяем, что кастомная тема существует, иначе используем дефолт
+        if (custom && custom.primary && custom.secondary) {
+            colors = { primary: custom.primary, secondary: custom.secondary };
+        } else {
+            colors = EVENT_COLORS['none']; // Запасной вариант
+        }
+    } else {
+        colors = EVENT_COLORS[effect] || EVENT_COLORS['none'];
+    }
+    document.documentElement.style.setProperty('--primary-accent', colors.primary);
+    document.documentElement.style.setProperty('--secondary-accent', colors.secondary);
+}
+
 function createParticles(type) {
     const containerFront = document.getElementById('particleContainerFront');
     const containerBack = document.getElementById('particleContainerBack');
@@ -337,18 +385,34 @@ function createParticles(type) {
 
     if (type === 'none' || !window.isParticlesEnabled || window.isPotatoMode) return;
 
+    // ОБЪЯВЛЯЕМ ОДИН РАЗ
     let particles = [];
-    if (type === 'snow') particles = ['❄', '❅'];
-    else if (type === 'hearts') particles = ['💖', '💕', '💘'];
-    else if (type === 'sakura') particles = ['🌸', '💮', '🌺'];
-    else if (type === 'party') particles = ['🎉', '✨', '🎈', '🥳'];
-    else return;
 
-    const globalAlpha = window.particleOpacity / 100; // Наш коэффициент
+    // ЗАПОЛНЯЕМ МАССИВ В ЗАВИСИМОСТИ ОТ ТЕМЫ
+    if (type === 'custom') {
+        const custom = JSON.parse(localStorage.getItem('customTheme'));
+        if (custom && custom.emojis && custom.emojis.trim() !== '') {
+            particles = custom.emojis.split(',');
+        }
+    } else if (type === 'snow') {
+        particles = ['❄', '❅'];
+    } else if (type === 'hearts') {
+        particles = ['💖', '💕', '💘'];
+    } else if (type === 'sakura') {
+        particles = ['🌸', '💮', '🌺'];
+    } else if (type === 'party') {
+        particles = ['🎉', '✨', '🎈', '🥳'];
+    }
+
+    // Если в итоге массив пуст (например, кастомные эмодзи не заданы) — выходим
+    if (particles.length === 0) return;
+
+    const globalAlpha = window.particleOpacity / 100;
 
     for (let i = 0; i < 50; i++) {
         const flake = document.createElement('div');
         flake.classList.add('particle');
+        // Берем случайный эмодзи из нашего массива
         flake.textContent = particles[Math.floor(Math.random() * particles.length)];
 
         flake.style.left = Math.random() * 100 + 'vw';
@@ -356,21 +420,16 @@ function createParticles(type) {
         flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
         flake.style.animationDelay = Math.random() * 5 + 's';
 
-        // Генерируем случайную базу (от 0.3 до 1.0)
         const baseOpacity = Math.random() * 0.7 + 0.3;
-        flake.dataset.baseOpacity = baseOpacity; // Сохраняем её!
-
-        // Устанавливаем итоговую прозрачность
+        flake.dataset.baseOpacity = baseOpacity;
         flake.style.opacity = baseOpacity * globalAlpha;
 
         if (Math.random() < 0.7) {
-            // 70% назад
             flake.style.filter = 'blur(1px)';
             flake.dataset.isBack = "true";
-            flake.style.opacity = (baseOpacity * globalAlpha) * 0.5; // Еще слабее сзади
+            flake.style.opacity = (baseOpacity * globalAlpha) * 0.5;
             if (containerBack) containerBack.appendChild(flake);
         } else {
-            // 30% вперед
             if (containerFront) containerFront.appendChild(flake);
         }
     }
