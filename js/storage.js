@@ -250,6 +250,7 @@ function exportConfig() {
             isSoundEnabled: window.isSoundEnabled
         },
         partnersTableData: JSON.parse(localStorage.getItem('partnersTableData') || '[]'),
+        networkFees: JSON.parse(localStorage.getItem('calcNetworkFees') || '[]'),
         history: window.historyData
     };
 
@@ -290,6 +291,9 @@ function importConfig(input) {
                     }
                     if (config.history) {
                         localStorage.setItem('cryptoCalcHistory', JSON.stringify(config.history));
+                    }
+                    if (config.networkFees) {
+                        localStorage.setItem('calcNetworkFees', JSON.stringify(config.networkFees));
                     }
                     alert('Configuration restored! Reloading...');
                     location.reload();
