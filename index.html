@@ -1,602 +1,276 @@
-<!-- 
-  Привет всем, кто залез сюда поглазеть, что и как тут устроено! Это самописный, на коленке, SPA-калькулятор для 
-  операционистов. Если вы опытным глазом видите какой-то мега-просчёт, пишите
-  Мусора тут выше крыши, но куда без этого ?)
-  — Veles
--->
-
 <!DOCTYPE html>
 <html lang="ru">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LetsExchange - Crypto Calculator</title>
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-    <link rel="stylesheet" href="css/style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
-        rel="stylesheet">
+    <title>Перенаправление - LetsExchange Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #161616;
+            --card-bg: rgba(30, 30, 30, 0.75);
+            --text-color: #ffffff;
+            --primary-accent: #3A7DFF;
+            --secondary-accent: #2CD4A7;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Glows */
+        .glow-1 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(58, 125, 255, 0.12) 0%, rgba(58, 125, 255, 0) 70%);
+            top: -150px;
+            left: -150px;
+            z-index: 1;
+        }
+
+        .glow-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(44, 212, 167, 0.09) 0%, rgba(44, 212, 167, 0) 70%);
+            bottom: -150px;
+            right: -150px;
+            z-index: 1;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 48px 40px;
+            width: 500px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border-color);
+            z-index: 2;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-lets {
+            color: var(--secondary-accent);
+        }
+
+        .logo-exchange {
+            color: var(--primary-accent);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.2px;
+        }
+
+        p {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .data-info {
+            background: rgba(44, 212, 167, 0.06);
+            border: 1px solid rgba(44, 212, 167, 0.15);
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            color: var(--secondary-accent);
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        /* Countdown circle */
+        .timer-container {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 32px auto;
+        }
+
+        .timer-svg {
+            transform: rotate(-90deg);
+            width: 90px;
+            height: 90px;
+        }
+
+        .timer-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 5;
+        }
+
+        .timer-bar {
+            fill: none;
+            stroke: var(--primary-accent);
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-dasharray: 226;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.7rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+        }
+
+        .btn-redirect {
+            background: linear-gradient(135deg, var(--primary-accent) 0%, #1A5ad6 100%);
+            border: none;
+            color: white;
+            padding: 18px 32px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(58, 125, 255, 0.25);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-redirect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(58, 125, 255, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-redirect:active {
+            transform: translateY(0);
+        }
+
+        .btn-redirect svg {
+            transition: transform 0.3s;
+        }
+
+        .btn-redirect:hover svg {
+            transform: translateX(4px);
+        }
+    </style>
 </head>
 
 <body>
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
 
-    <div class="watermark">
-        Veles Project
-        <span id="lowPowerIndicator" style="margin-left: 8px; font-size: 1.2rem; color: #ffeb3b; display: none;"
-            title="Potato Mode Active">⚡</span>
-    </div>
-
-    <!-- Left Sidebar - Help Panel -->
-    <div class="help-panel hidden" id="helpPanel">
-        <div class="help-header" style="justify-content: flex-start; gap: 20px;">
-            <div class="help-tabs">
-                <button class="help-tab-btn active" data-tab="partners"
-                    onclick="switchHelpTab('partners')">Partners</button>
-                <button class="help-tab-btn" data-tab="fees" onclick="switchHelpTab('fees')">Withdrawal Fees</button>
-            </div>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <button class="btn-ghost-danger" id="resetPartnersBtn" onclick="resetTableToDefaults()">Default</button>
-                <button class="btn-ghost-danger" id="resetFeesBtn" onclick="resetFeesToDefaults()"
-                    style="display: none;">Default</button>
-            </div>
-            <!-- Hide button removed, floating control handles it -->
+    <div class="container">
+        <div class="logo">
+            <span class="logo-lets">Lets</span><span class="logo-exchange">Exchange</span>
         </div>
 
-        <!-- Partners Tab -->
-        <div class="help-content help-tab-content active" id="help-tab-partners">
-            <table class="partners-table">
-                <thead>
-                    <tr>
-                        <th class="text-left">Partner</th>
-                        <th class="text-center">Float %</th>
-                        <th class="text-center">Min amount, $</th>
-                        <th class="text-left">Coins</th>
-                        <th class="text-center">Details</th>
-                        <th class="text-center">AutoRefund</th>
-                        <th class="text-center">×</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Ellipal</td>
-                        <td class="text-center"><span class="badge badge-float-green" contenteditable="true">3%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">60</td>
-                        <td class="text-left" contenteditable="true">Все, кроме btc/eth</td>
-                        <td class="text-center"><span class="icon-placeholder"></span></td>
-                        <td class="text-center"><span class="badge badge-autorefund-no" contenteditable="true">No</span>
-                        </td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">SwapZone</td>
-                        <td class="text-center"><span class="badge badge-float-green" contenteditable="true">3%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">110</td>
-                        <td class="text-left" contenteditable="true"></td>
-                        <td class="text-center"><span class="icon-placeholder"></span></td>
-                        <td class="text-center"><span class="badge badge-autorefund-no" contenteditable="true">No</span>
-                        </td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Swapspace</td>
-                        <td class="text-center"><span class="badge badge-float-green" contenteditable="true">3%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">110</td>
-                        <td class="text-left" contenteditable="true"></td>
-                        <td class="text-center"><span class="icon-placeholder"></span></td>
-                        <td class="text-center"><span class="badge badge-autorefund-no" contenteditable="true">No</span>
-                        </td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">stealthex.io</td>
-                        <td class="text-center"><span class="badge badge-float-green" contenteditable="true">3%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">80</td>
-                        <td class="text-left" contenteditable="true">Только для TAO</td>
-                        <td class="text-center"><span class="icon-placeholder"></span></td>
-                        <td class="text-center"><span class="badge badge-autorefund-no" contenteditable="true">No</span>
-                        </td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">tr.energy</td>
-                        <td class="text-center"><span class="badge badge-float-red" contenteditable="true">5%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">30</td>
-                        <td class="text-left" contenteditable="true">Все, кроме btc/eth</td>
-                        <td class="text-center" contenteditable="true">Возврат на исходный адрес</td>
-                        <td class="text-center"><span class="badge badge-autorefund-aml"
-                                contenteditable="true">AML</span></td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Unitywallet</td>
-                        <td class="text-center"><span class="badge badge-float-red" contenteditable="true">5%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">110</td>
-                        <td class="text-left" contenteditable="true"></td>
-                        <td class="text-center" contenteditable="true">Возврат на Refund address. </td>
-                        <td class="text-center"><span class="badge badge-autorefund-aml"
-                                contenteditable="true">AML</span></td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Edge</td>
-                        <td class="text-center"><span class="badge badge-float-red" contenteditable="true">5%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">50</td>
-                        <td class="text-left" contenteditable="true">Все, кроме btc/eth</td>
-                        <td class="text-center" contenteditable="true">Возврат на Refund address</td>
-                        <td class="text-center"><span class="badge badge-autorefund-error" contenteditable="true">Any
-                                "Error"</span></td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Invity.io & Trezor</td>
-                        <td class="text-center"><span class="badge badge-float-red" contenteditable="true">5%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">110</td>
-                        <td class="text-left" contenteditable="true"></td>
-                        <td class="text-center" contenteditable="true">Возврат на Refund address</td>
-                        <td class="text-center"><span class="badge badge-autorefund-aml"
-                                contenteditable="true">AML</span></td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-left" contenteditable="true">Trustee Wallet</td>
-                        <td class="text-center"><span class="badge badge-float-red" contenteditable="true">5%</span>
-                        </td>
-                        <td class="text-center" contenteditable="true">110</td>
-                        <td class="text-left" contenteditable="true"></td>
-                        <td class="text-center" contenteditable="true">Возврат на исходный адрес</td>
-                        <td class="text-center"><span class="badge badge-autorefund-aml"
-                                contenteditable="true">AML</span></td>
-                        <td class="text-center"><button class="delete-row-btn" onclick="deleteTableRow(this)">×</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            </table>
-            <button class="add-row-btn" onclick="addTableRow()">+ Add Partner</button>
+        <h2>Калькулятор переехал</h2>
+        <p>Мы объединили версии! Тестовый билд закрыт, теперь вся команда работает на единой стабильной и быстрой платформе.</p>
+
+        <div class="data-info">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Ваши настройки, история и партнеры уже перенесены!
         </div>
 
-        <!-- Fees Tab -->
-        <div class="help-content help-tab-content hidden" id="help-tab-fees">
-            <input type="text" id="feeSearch" class="fees-search-input"
-                placeholder="Search coin or network (e.g. USDT TRC20)..." autocomplete="off">
-            <div class="help-content-scrollable">
-                <table class="fees-table">
-                    <thead>
-                        <tr>
-                            <th class="text-left" style="min-width: 140px;">Coin/Network</th>
-                            <th class="text-center">Binance</th>
-                            <th class="text-center">KuCoin</th>
-                            <th class="text-center">ByBit</th>
-                            <th class="text-center">MEXC</th>
-                            <th class="text-center">Huobi</th>
-                            <th class="text-center">×</th>
-                        </tr>
-                    </thead>
-                    <tbody id="feesTableBody">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-                <button class="add-row-btn" onclick="addNewFeeRow()">+ Add Coin</button>
-            </div>
+        <div class="timer-container">
+            <svg class="timer-svg" viewBox="0 0 80 80">
+                <circle class="timer-bg" cx="40" cy="40" r="36"></circle>
+                <circle class="timer-bar" id="timerBar" cx="40" cy="40" r="36"></circle>
+            </svg>
+            <div class="timer-text" id="countdown">5</div>
         </div>
-    </div>
 
-    <!-- Center Workspace -->
-    <div class="workspace">
-        <div class="center-group">
-            <!-- Calculator Column -->
-            <div class="calculator-column">
-                <div id="centerGreetingContainer"></div>
-                <h1 class="app-title"><span class="title-lets"><span class="brand-letter">L</span>ets</span><span
-                        class="title-exchange">Exchange</span>
-                </h1>
-
-                <div class="header-controls hidden" id="headerControls">
-                    <div class="header-left">
-                        <button class="fee-btn" onclick="applyQuickFee(-0.1)">-0.1%</button>
-                        <button class="fee-btn" onclick="applyQuickFee(0.1)">+0.1%</button>
-                    </div>
-                    <div class="header-right" style="position: relative; left: -20px;">
-                        <button class="btn-delta-header" onclick="toggleDeltaMode()">Δ</button>
-                    </div>
-                </div>
-
-                <div class="calculator">
-                    <div class="display-container" id="displayContainer">
-                        <div id="copyTooltip" class="copy-tooltip">Copied!</div>
-                        <input type="text" id="display" placeholder="0" autocomplete="off">
-                    </div>
-
-                    <div class="buttons">
-                        <button class="btn-red" onclick="clearDisplay()">AC</button>
-                        <button class="btn-func" onclick="deleteLast()">DEL</button>
-                        <button class="btn-func" onclick="inputSymbol('%')">%</button>
-                        <button class="btn-operation" onclick="inputSymbol('/')">÷</button>
-
-                        <button onclick="inputSymbol('7')">7</button>
-                        <button onclick="inputSymbol('8')">8</button>
-                        <button onclick="inputSymbol('9')">9</button>
-                        <button class="btn-operation" onclick="inputSymbol('*')">×</button>
-
-                        <button onclick="inputSymbol('4')">4</button>
-                        <button onclick="inputSymbol('5')">5</button>
-                        <button onclick="inputSymbol('6')">6</button>
-                        <button class="btn-operation" onclick="inputSymbol('-')">−</button>
-
-                        <button onclick="inputSymbol('1')">1</button>
-                        <button onclick="inputSymbol('2')">2</button>
-                        <button onclick="inputSymbol('3')">3</button>
-                        <button class="btn-operation" onclick="inputSymbol('+')">+</button>
-
-                        <button class="span-2" onclick="inputSymbol('0')">0</button>
-                        <button onclick="inputSymbol('.')">.</button>
-                        <button class="btn-equals" onclick="calculate()">=</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Panel -->
-            <!-- History Area Container -->
-            <div class="history-container">
-                <!-- History Column Wrapper -->
-                <div class="history-column">
-                    <!-- Above History Greeting -->
-                    <div id="historyAboveGreeting" class="history-above-greeting"></div>
-
-                    <!-- History Panel -->
-                    <div class="history-panel" id="historyPanel">
-                        <div class="history-header">
-                            <h3>HISTORY</h3>
-                            <button onclick="clearHistory()">Clear All</button>
-                        </div>
-                        <div class="history-hint">Click on a row to edit formula</div>
-                        <ul class="history-list" id="historyList"></ul>
-                    </div>
-                </div>
-
-                <!-- BTC Widget (Hidden by default) -->
-                <div class="btc-widget hidden" id="btcWidget">
-                    <div class="btc-header">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="btc-icon">₿</span>
-                            <span class="btc-title">BTC Converter</span>
-                        </div>
-                        <div class="btc-controls">
-                            <button class="icon-btn-small" onclick="refreshBtcPrice()" title="Refresh Price">
-                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
-                                    fill="none">
-                                    <path d="M23 4v6h-6"></path>
-                                    <path d="M1 20v-6h6"></path>
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
-                                    </path>
-                                </svg>
-                            </button>
-                            <button class="icon-btn-small" onclick="toggleBtcLock()" id="btcLockBtn"
-                                title="Lock Auto-Update">
-                                <!-- Default: Open Lock (Auto-Update ON) -->
-                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
-                                    fill="none">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="btc-price-display" id="btcPriceDisplay">Loading...</div>
-
-                    <div class="btc-input-group">
-                        <label class="btc-input-label">Amount (BTC)</label>
-                        <input type="text" id="btcInput" placeholder="0.00" autocomplete="off">
-                    </div>
-
-                    <div class="btc-input-group">
-                        <label class="btc-input-label">Value (USDT)</label>
-                        <input type="text" id="usdtInput" placeholder="0.00" autocomplete="off">
-                    </div>
-                    <div id="btcFooterGreeting" class="btc-footer-greeting" style="display: none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <!-- Top Left Controls (Show Help/Settings) -->
-    <div class="top-left-controls" id="floatingControls">
-        <button class="nav-control-btn icon-btn" id="settingsToggle" onclick="toggleSettingsModal()">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23-.41-.12-.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+        <button class="btn-redirect" onclick="redirectToMain()">
+            Перейти к калькулятору
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
         </button>
-        <button class="nav-control-btn" id="helpToggleFloat" onclick="toggleHelpPanel()">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
-            </svg>
-            <span id="helpToggleText">Show Help</span>
-        </button>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay hidden" id="modalOverlay" onclick="toggleSettingsModal()"></div>
-    <div class="settings-modal hidden" id="settingsModal">
-        <div class="settings-header">
-            <div class="settings-tabs">
-                <span class="tab-item active" data-tab="general" onclick="switchSettingsTab('general')">General</span>
-                <span class="tab-item" data-tab="visual" onclick="switchSettingsTab('visual')">Visual</span>
-            </div>
-            <button class="settings-close" onclick="toggleSettingsModal()">×</button>
-        </div>
+    <script>
+        const targetUrl = 'https://gekarocketa.github.io/VelesCalcForLE/';
+        let count = 5;
+        const countdownEl = document.getElementById('countdown');
+        const timerBar = document.getElementById('timerBar');
+        const totalLength = 2 * Math.PI * 36; // 226.19
 
-        <!-- General Tab Content -->
-        <div class="settings-content" id="settings-general">
-            <div class="settings-row">
-                <span class="settings-label">Mac Button Style</span>
-                <label class="switch">
-                    <input type="checkbox" id="macButtonsToggle" onchange="toggleMacButtons(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-row">
-                <span class="settings-label">Auto-Copy on Click</span>
-                <label class="switch">
-                    <input type="checkbox" id="autoCopyToggle" onchange="toggleAutoCopy(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-row">
-                <span class="settings-label">Pro Features</span>
-                <label class="switch">
-                    <input type="checkbox" id="proFeaturesToggle" onchange="toggleProFeatures(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-row">
-                <span class="settings-label">Visual Effects ✨</span>
-                <select id="seasonSelect" class="settings-select" onchange="toggleVisualEffects(this)">
-                    <option value="auto">Auto 🤖</option>
-                    <option value="none">Off</option>
-                    <option value="snow">Snow ❄️</option>
-                    <option value="hearts">Hearts 💖</option>
-                    <option value="sakura">Sakura 🌸</option>
-                    <option value="party">Party 🥳</option>
-                </select>
-            </div>
-            <div class="settings-row">
-                <span class="settings-label" style="padding-left: 10px; font-size: 0.9em; opacity: 0.8;">↳ Show
-                    Particles</span>
-                <label class="switch">
-                    <input type="checkbox" id="particlesToggle" onchange="toggleParticles(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-row">
-                <span class="settings-label">UI Sounds 🔊</span>
-                <label class="switch">
-                    <input type="checkbox" id="soundToggle" onchange="toggleSound(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="settings-row" style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.2rem;">Energy Saving ⚡</span>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" id="potatoModeToggle" onchange="togglePotatoMode(this)">
-                    <span class="slider"></span>
-                </label>
-            </div>
+        // Set initial stroke
+        timerBar.style.strokeDasharray = totalLength;
+        timerBar.style.strokeDashoffset = 0;
 
-            <div class="settings-row"
-                style="margin-top: 16px; margin-bottom: 16px; display:flex; justify-content: space-between; gap: 10px;">
-                <button class="ghost-btn" onclick="exportConfig()"
-                    style="font-size: 0.9rem; padding: 10px; flex: 1;">Export
-                    Config</button>
-                <button class="ghost-btn" onclick="document.getElementById('importFile').click()"
-                    style="font-size: 0.9rem; padding: 10px; color: var(--primary-accent); flex: 1;">Import
-                    Config</button>
-                <input type="file" id="importFile" accept=".json,.txt" style="display: none;"
-                    onchange="importConfig(this)">
-            </div>
+        const interval = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
 
-            <div class="settings-row"
-                style="justify-content: center; margin-bottom: 10px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                <button class="ghost-btn" onclick="hardRefresh()"
-                    style="color: var(--text-secondary); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; opacity: 0.8;">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
-                        <path d="M23 4v6h-6"></path>
-                        <path d="M1 20v-6h6"></path>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                    </svg>
-                    Reset Data & Update
-                </button>
-            </div>
+            // Animate progress circle stroke
+            const percent = count / 5;
+            timerBar.style.strokeDashoffset = totalLength * (1 - percent);
 
-            <!-- Центрированный блок информации с увеличенным отступом -->
-            <div class="settings-row" style="justify-content: center; margin-top: 30px; border: none; padding-top: 0;">
-                <div class="settings-info" style="position: relative; left: auto; transform: none; bottom: auto;">
-                    <div class="info-icon" aria-label="Info">i</div>
+            if (count <= 0) {
+                clearInterval(interval);
+                redirectToMain();
+            }
+        }, 1000);
 
-                    <div class="info-tooltip"
-                        style="left: 50%; transform: translateX(-50%) translateY(0); bottom: 35px;">
-                        <ul class="hotkey-list">
-                            <li class="hotkey-item"><span>Clear</span> <span class="kbd">Esc</span></li>
-                            <li class="hotkey-item"><span>Delta (Δ)</span> <span class="kbd">D</span></li>
-                            <li class="hotkey-item"><span>Potato Mode</span> <span class="kbd">Y</span></li>
-                            <li class="hotkey-item"><span>Pro Features</span> <span class="kbd">P</span></li>
-                            <li class="hotkey-item"><span>Mac Style</span> <span class="kbd">M</span></li>
-                            <li class="hotkey-item"><span>Help</span> <span class="kbd">H</span></li>
-                            <li class="hotkey-item"><span>Settings</span> <span class="kbd">O</span></li>
-                        </ul>
-
-                        <div class="tooltip-footer"
-                            style="margin-top:8px; font-size:0.7rem; color:#666; text-align:center; white-space: nowrap;">
-                            Works in any keyboard layout
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Visual Tab Content -->
-        <div class="settings-content hidden" id="settings-visual">
-            <!-- Section 1: Identity -->
-            <div class="settings-section">
-                <h3 class="section-title">Identity</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Your Name</label>
-                    <input type="text" class="settings-input" id="userName" placeholder="Name">
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Greeting Prefix</label>
-                    <div class="input-group-row">
-                        <input type="text" class="settings-input" id="greetingPrefix" placeholder="e.g. Welcome,">
-                        <button class="random-dice-btn" id="randomGreetingToggle" onclick="toggleRandomGreeting()"
-                            title="Randomize Greeting">🎲</button>
-                    </div>
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Position</label>
-                    <select id="greetingPosition" class="settings-select">
-                        <option value="off">Off (Hidden)</option>
-                        <option value="replace-logo">Replace Logo</option>
-                        <option value="top-right">Top Right</option>
-                        <option value="center">Center (Above Title)</option>
-                        <option value="above-history">Above History</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Section 2: Wallpaper -->
-            <div class="settings-section">
-                <h3 class="section-title">Wallpaper</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Image URL</label>
-                    <input type="text" class="settings-input" id="wallpaperUrl" placeholder="https://...">
-                </div>
-                <div class="settings-row">
-                    <button class="btn-clear-wallpaper" onclick="clearWallpaper()">Clear Wallpaper</button>
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Wallpaper <span id="dimmingValue">50%</span></label>
-                    <input type="range" class="settings-slider" id="dimmingSlider" min="0" max="100" value="50">
-                </div>
-            </div>
-            <div class="settings-row">
-                <label class="settings-label">Particle <span id="particleOpacityValue">70%</span></label>
-                <input type="range" class="settings-slider" id="particleOpacitySlider" min="0" max="100" value="70">
-            </div>
-            <!-- Section 3: Custom Theme -->
-            <div class="settings-section">
-                <h3 class="section-title">Custom Theme</h3>
-                <div class="settings-row">
-                    <label class="settings-label">Primary Color</label>
-                    <input type="color" class="color-picker" id="primaryColorPicker" value="#3A7DFF">
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Secondary Color</label>
-                    <input type="color" class="color-picker" id="secondaryColorPicker" value="#2CD4A7">
-                </div>
-                <div class="settings-row">
-                    <label class="settings-label">Particle Emoji</label>
-                    <input type="text" class="settings-input" id="particleEmojiInput" placeholder="Напр: 💸,🚀,💎"
-                        style="max-width: 150px;">
-                </div>
-                <div class="settings-row">
-                    <button class="ghost-btn" onclick="applyCustomTheme()">Apply Custom</button>
-                    <button class="btn-ghost-danger" onclick="resetToDefaultTheme()"
-                        style="font-size: 0.8rem;">Reset</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-
-    <!-- Контейнер для частиц НАД калькулятором (30%) -->
-    <div id="particleContainerFront"></div>
-
-    <!-- Контейнер для частиц ЗА калькулятором (70%) -->
-    <div id="particleContainerBack"></div>
-
-    <!-- Background Layer for Custom Wallpaper -->
-    <div id="bg-layer">
-        <div class="overlay"></div>
-    </div>
-
-    <!-- User Greeting (Top Right) -->
-    <div class="user-greeting" id="userGreeting" style="display: none;">
-        Welcome, <span id="greetingName">User</span>
-    </div>
-
-    <script src="js/storage.js"></script>
-    <script src="js/calculator.js"></script>
-    <script src="js/sound.js"></script>
-    <script src="js/fees.js"></script>
-    <script src="js/effects.js"></script>
-    <script src="js/btc.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/main.js"></script>
-
-
-
-    <!-- Update Notification Modal -->
-    <div class="settings-modal hidden" id="updateModal" style="z-index: 2000; width: 450px; text-align: center;">
-        <div style="margin-bottom: 20px;">
-            <h2 style="color: var(--primary-accent); margin: 0 0 10px 0;">Визуальное обновление 1.2.6 🚀</h2>
-            <p style="color: #ccc; font-size: 0.95rem; line-height: 1.5;">
-                Глобальный редизайн и новые функции!
-            </p>
-        </div>
-
-        <!-- Блок списка изменений -->
-        <div
-            style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
-            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; font-size: 0.9rem; line-height: 1.8;">
-                <li>🌸 <b>Визуал:</b> Теперь не только снег! Добавлены эффекты <b>Sakura, Hearts, Party</b>.</li>
-                <li>🖼 <b>Кастомизация:</b> Ставь любые обои по URL + настройка затемнения.</li>
-                <li>👤 <b>Identity:</b> Укажи имя и настрой рандомные приветствия/фразы в разных частях экрана.</li>
-                <li>💰 <b>Withdrawal Fees:</b> Добавлены подсказки по комиссии для вывода.</li>
-                <li>🏗 <b>Архитектура:</b> Код разбит на модули, повышена стабильность.</li>
-                <li>🐛 <b>Фиксы:</b> Починил прозрачность, слои, анимации.</li>
-                <li>⚠️ <b>ВАЖНО:</b> Для корректной работы всех функций необходимо:зайти в настройки и нажать "Reset
-                    Data & Update".</li>
-            </ul>
-        </div>
-
-        <!-- Место для YouTube видео (раскомментируй и вставь ID видео, когда будет готово) -->
-
-        <div
-            style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
-            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                src="https://www.youtube.com/embed/r1bObZH6uX0" title="YouTube video player" frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen>
-            </iframe>
-        </div>
-
-
-        <button class="btn-operation" onclick="closeUpdateModal()"
-            style="width: 100%; padding: 12px; font-size: 1rem; border-radius: 12px;">
-            Круто, погнали!
-        </button>
-    </div>
+        function redirectToMain() {
+            window.location.href = targetUrl;
+        }
+    </script>
 </body>
 
 </html>
